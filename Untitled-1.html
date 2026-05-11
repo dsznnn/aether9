@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ÆTHER//9</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Consolas, monospace;
+}
+
+body{
+    background:#050505;
+    color:#e0e0e0;
+    overflow-x:hidden;
+}
+
+.wrapper{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:30px;
+}
+
+.panel{
+    width:900px;
+    max-width:100%;
+    background:#090909;
+    border:1px solid #222;
+    padding:40px;
+    box-shadow:0 0 40px rgba(255,255,255,0.03);
+}
+
+h1{
+    font-size:42px;
+    letter-spacing:6px;
+    margin-bottom:10px;
+}
+
+.sub{
+    color:#666;
+    margin-bottom:30px;
+}
+
+input, textarea{
+    width:100%;
+    margin-top:10px;
+    margin-bottom:15px;
+    padding:14px;
+    background:#000;
+    border:1px solid #222;
+    color:white;
+    resize:vertical;
+}
+
+button{
+    padding:12px 18px;
+    background:#111;
+    border:1px solid #333;
+    color:white;
+    cursor:pointer;
+    margin-right:10px;
+    margin-top:10px;
+}
+
+button:hover{
+    background:#1b1b1b;
+}
+
+.hidden{
+    display:none;
+}
+
+.level{
+    margin-top:20px;
+    line-height:1.8;
+    white-space:pre-wrap;
+}
+
+.small{
+    color:#666;
+    margin-top:20px;
+    font-size:12px;
+}
+
+.adminBox{
+    border:1px solid #222;
+    padding:20px;
+    margin-top:30px;
+}
+
+textarea{
+    min-height:120px;
+}
+
+hr{
+    border:none;
+    border-top:1px solid #222;
+    margin:30px 0;
+}
+
+.success{
+    color:#5cff87;
+}
+
+.error{
+    color:#ff6f6f;
+}
+
+.glow{
+    animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+    from{
+        opacity:0.7;
+    }
+
+    to{
+        opacity:1;
+        text-shadow:0 0 10px rgba(255,255,255,0.4);
+    }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+<div class="panel">
+
+<h1 class="glow">ÆTHER//9</h1>
+
+<div class="sub">
+the signal was never meant to be found.
+</div>
+
+<!-- AUTH AREA -->
+
+<div id="authArea">
+
+<h2>LOGIN</h2>
+
+<input type="text" id="loginUser" placeholder="USERNAME">
+
+<input type="password" id="loginPass" placeholder="PASSWORD">
+
+<button onclick="login()">LOGIN</button>
+
+<button onclick="guestLogin()">PLAY AS GUEST</button>
+
+<hr>
+
+<h2>SIGN UP</h2>
+
+<input type="text" id="signupUser" placeholder="USERNAME">
+
+<input type="password" id="signupPass" placeholder="PASSWORD">
+
+<button onclick="signup()">CREATE ACCOUNT</button>
+
+<div id="authMsg" class="small"></div>
+
+</div>
+
+<!-- GAME AREA -->
+
+<div id="gameArea" class="hidden">
+
+<div>
+USER:
+<span id="currentUser"></span>
+</div>
+
+<div class="small">
+TOTAL SITE VIEWS:
+<span id="viewCount"></span>
+</div>
+
+<div class="small">
+LEVEL:
+<span id="levelNum"></span>/50
+</div>
+
+<div id="question" class="level"></div>
+
+<input type="text" id="answerInput" placeholder="ENTER RESPONSE">
+
+<button onclick="submitAnswer()">SUBMIT</button>
+
+<button onclick="logout()">LOGOUT</button>
+
+<hr>
+
+<!-- ADMIN -->
+
+<h2>ADMIN ACCESS</h2>
+
+<input type="password" id="adminPassword" placeholder="ADMIN PASSWORD">
+
+<button onclick="adminLogin()">ENTER</button>
+
+<div id="adminPanel" class="adminBox hidden">
+
+<h2>ADMIN PANEL</h2>
+
+<div class="small success">
+ADMIN ACCESS GRANTED
+</div>
+
+<hr>
+
+<h3>EDIT CURRENT PUZZLE</h3>
+
+<textarea id="editQuestion"></textarea>
+
+<input type="text" id="editAnswer" placeholder="ANSWER">
+
+<button onclick="savePuzzle()">SAVE PUZZLE</button>
+
+<hr>
+
+<h3>ALL USERS</h3>
+
+<div id="userList"></div>
+
+<hr>
+
+<h3>RESET VIEW COUNT</h3>
+
+<button onclick="resetViews()">RESET</button>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+/* =========================
+VIEW COUNT
+========================= */
+
+let views = localStorage.getItem("aether9_views");
+
+if(!views){
+
+    views = 0;
+
+}
+
+views++;
+
+localStorage.setItem("aether9_views", views);
+
+/* =========================
+PUZZLES
+========================= */
+
+let puzzles = JSON.parse(
+    localStorage.getItem("aether9_puzzles")
+) || [
+
+{
+question:
+`LEVEL 1
+
+everything begins with a name.
+
+what is this system called?`,
+answer:"æther//9"
+},
+
+{
+question:
+`LEVEL 2
+
+01000001 01000101 01010100 01001000 01000101 01010010`,
+answer:"aether"
+},
+
+{
+question:
+`LEVEL 3
+
+ROT13:
+
+nrgure`,
+answer:"aether"
+},
+
+{
+question:
+`LEVEL 4
+
+What disappears when spoken?`,
+answer:"silence"
+},
+
+{
+question:
+`LEVEL 5
+
+What has keys but no locks?`,
+answer:"keyboard"
+}
+
+];
+
+/* FILL TO 50 */
+
+while(puzzles.length < 50){
+
+    puzzles.push({
+
+        question:
+`LEVEL ${puzzles.length + 1}
+
+PLACEHOLDER PUZZLE`,
+
+        answer:"test"
+
+    });
+
+}
+
+/* =========================
+USER SYSTEM
+========================= */
+
+let currentUser = null;
+let currentLevel = 0;
+
+/* SIGNUP */
+
+function signup(){
+
+    let user =
+        document
+        .getElementById("signupUser")
+        .value
+        .trim();
+
+    let pass =
+        document
+        .getElementById("signupPass")
+        .value
+        .trim();
+
+    if(!user || !pass){
+
+        return msg("fill everything");
+
+    }
+
+    let users = JSON.parse(
+        localStorage.getItem("aether9_users")
+    ) || {};
+
+    if(users[user]){
+
+        return msg("user already exists");
+
+    }
+
+    users[user] = {
+
+        password:pass,
+        level:0
+
+    };
+
+    localStorage.setItem(
+        "aether9_users",
+        JSON.stringify(users)
+    );
+
+    msg("account created", true);
+
+}
+
+/* LOGIN */
+
+function login(){
+
+    let user =
+        document
+        .getElementById("loginUser")
+        .value
+        .trim();
+
+    let pass =
+        document
+        .getElementById("loginPass")
+        .value
+        .trim();
+
+    let users = JSON.parse(
+        localStorage.getItem("aether9_users")
+    ) || {};
+
+    if(!users[user]){
+
+        return msg("user not found");
+
+    }
+
+    if(users[user].password !== pass){
+
+        return msg("wrong password");
+
+    }
+
+    currentUser = user;
+
+    currentLevel = users[user].level || 0;
+
+    document
+        .getElementById("authArea")
+        .classList
+        .add("hidden");
+
+    document
+        .getElementById("gameArea")
+        .classList
+        .remove("hidden");
+
+    document.getElementById("currentUser").innerText =
+        currentUser;
+
+    document.getElementById("viewCount").innerText =
+        views;
+
+    loadPuzzle();
+
+}
+
+/* GUEST LOGIN */
+
+function guestLogin(){
+
+    currentUser =
+        "guest_" +
+        Math.floor(Math.random() * 999999);
+
+    currentLevel = 0;
+
+    document
+        .getElementById("authArea")
+        .classList
+        .add("hidden");
+
+    document
+        .getElementById("gameArea")
+        .classList
+        .remove("hidden");
+
+    document.getElementById("currentUser").innerText =
+        currentUser + " (GUEST)";
+
+    document.getElementById("viewCount").innerText =
+        views;
+
+    loadPuzzle();
+
+}
+
+/* LOGOUT */
+
+function logout(){
+
+    location.reload();
+
+}
+
+/* MESSAGE */
+
+function msg(text, success=false){
+
+    let el =
+        document.getElementById("authMsg");
+
+    el.innerText = text;
+
+    el.className =
+        success
+        ? "small success"
+        : "small error";
+
+}
+
+/* =========================
+LOAD PUZZLE
+========================= */
+
+function loadPuzzle(){
+
+    document.getElementById("question").innerText =
+        puzzles[currentLevel].question;
+
+    document.getElementById("levelNum").innerText =
+        currentLevel + 1;
+
+    document.getElementById("answerInput").value = "";
+
+}
+
+/* =========================
+SUBMIT ANSWER
+========================= */
+
+function submitAnswer(){
+
+    let input =
+        document
+        .getElementById("answerInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+    let correct =
+        puzzles[currentLevel]
+        .answer
+        .toLowerCase();
+
+    if(input === correct){
+
+        currentLevel++;
+
+        /* SAVE NON GUEST USERS */
+
+        if(!currentUser.startsWith("guest_")){
+
+            let users = JSON.parse(
+                localStorage.getItem("aether9_users")
+            );
+
+            users[currentUser].level =
+                currentLevel;
+
+            localStorage.setItem(
+                "aether9_users",
+                JSON.stringify(users)
+            );
+
+        }
+
+        if(currentLevel >= puzzles.length){
+
+            document.getElementById("question").innerHTML =
+
+`ACCESS GRANTED
+
+you found the signal.
+
+SESSION TERMINATED.`;
+
+            return;
+
+        }
+
+        loadPuzzle();
+
+    } else {
+
+        alert("incorrect");
+
+    }
+
+}
+
+/* =========================
+ADMIN LOGIN
+========================= */
+
+function adminLogin(){
+
+    let pass =
+        document
+        .getElementById("adminPassword")
+        .value;
+
+    if(pass === "999.000"){
+
+        document
+            .getElementById("adminPanel")
+            .classList
+            .remove("hidden");
+
+        loadAdminData();
+
+    } else {
+
+        alert("access denied");
+
+    }
+
+}
+
+/* =========================
+ADMIN DATA
+========================= */
+
+function loadAdminData(){
+
+    document.getElementById("editQuestion").value =
+        puzzles[currentLevel].question;
+
+    document.getElementById("editAnswer").value =
+        puzzles[currentLevel].answer;
+
+    let users = JSON.parse(
+        localStorage.getItem("aether9_users")
+    ) || {};
+
+    let html = "";
+
+    for(let u in users){
+
+        html += `
+        <div style="margin-bottom:10px">
+        ${u} — LEVEL ${users[u].level + 1}
+        </div>
+        `;
+
+    }
+
+    document.getElementById("userList").innerHTML =
+        html;
+
+}
+
+/* =========================
+SAVE PUZZLE
+========================= */
+
+function savePuzzle(){
+
+    puzzles[currentLevel].question =
+        document.getElementById("editQuestion").value;
+
+    puzzles[currentLevel].answer =
+        document.getElementById("editAnswer").value;
+
+    localStorage.setItem(
+        "aether9_puzzles",
+        JSON.stringify(puzzles)
+    );
+
+    loadPuzzle();
+
+    alert("saved");
+
+}
+
+/* =========================
+RESET VIEWS
+========================= */
+
+function resetViews(){
+
+    localStorage.setItem(
+        "aether9_views",
+        0
+    );
+
+    alert("views reset");
+
+}
+
+</script>
+
+</body>
+</html>
