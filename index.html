@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ÆTHER//9</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Consolas, monospace;
+}
+
+body{
+    background:#050505;
+    color:#e0e0e0;
+    overflow-x:hidden;
+}
+
+.wrapper{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:30px;
+}
+
+.panel{
+    width:1000px;
+    max-width:100%;
+    background:#090909;
+    border:1px solid #222;
+    padding:40px;
+    box-shadow:0 0 40px rgba(255,255,255,0.04);
+}
+
+h1{
+    font-size:48px;
+    letter-spacing:8px;
+    margin-bottom:10px;
+}
+
+.sub{
+    color:#666;
+    margin-bottom:30px;
+}
+
+input,
+textarea,
+select{
+    width:100%;
+    background:#000;
+    color:white;
+    border:1px solid #222;
+    padding:14px;
+    margin-top:10px;
+    margin-bottom:15px;
+    resize:vertical;
+}
+
+button{
+    padding:12px 20px;
+    background:#111;
+    border:1px solid #333;
+    color:white;
+    cursor:pointer;
+    margin-right:10px;
+    margin-top:10px;
+}
+
+button:hover{
+    background:#1b1b1b;
+}
+
+.hidden{
+    display:none;
+}
+
+.level{
+    white-space:pre-wrap;
+    line-height:1.8;
+    margin-top:20px;
+}
+
+.small{
+    color:#777;
+    font-size:12px;
+    margin-top:10px;
+}
+
+.adminBox{
+    border:1px solid #222;
+    padding:20px;
+    margin-top:30px;
+}
+
+textarea{
+    min-height:180px;
+}
+
+.success{
+    color:#5cff87;
+}
+
+.error{
+    color:#ff6f6f;
+}
+
+hr{
+    border:none;
+    border-top:1px solid #222;
+    margin:30px 0;
+}
+
+.glow{
+    animation:glow 2s infinite alternate;
+}
+
+@keyframes glow{
+
+    from{
+        opacity:0.7;
+    }
+
+    to{
+        opacity:1;
+        text-shadow:0 0 12px rgba(255,255,255,0.3);
+    }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="wrapper">
+<div class="panel">
+
+<h1 class="glow">ÆTHER//9</h1>
+
+<div class="sub">
+the signal was never meant to be found.
+</div>
+
+<!-- AUTH -->
+
+<div id="authArea">
+
+<h2>LOGIN</h2>
+
+<input type="text" id="loginUser" placeholder="USERNAME">
+
+<input type="password" id="loginPass" placeholder="PASSWORD">
+
+<button onclick="login()">LOGIN</button>
+
+<button onclick="guestLogin()">PLAY AS GUEST</button>
+
+<hr>
+
+<h2>SIGN UP</h2>
+
+<input type="text" id="signupUser" placeholder="USERNAME">
+
+<input type="password" id="signupPass" placeholder="PASSWORD">
+
+<button onclick="signup()">CREATE ACCOUNT</button>
+
+<div id="authMsg" class="small"></div>
+
+</div>
+
+<!-- GAME -->
+
+<div id="gameArea" class="hidden">
+
+<div>
+USER:
+<span id="currentUser"></span>
+</div>
+
+<div class="small">
+TOTAL SITE VIEWS:
+<span id="viewCount"></span>
+</div>
+
+<div class="small">
+LEVEL:
+<span id="levelNum"></span>/50
+</div>
+
+<div id="question" class="level"></div>
+
+<input type="text" id="answerInput" placeholder="ENTER RESPONSE">
+
+<button onclick="submitAnswer()">SUBMIT</button>
+
+<button onclick="logout()">LOGOUT</button>
+
+<hr>
+
+<!-- ADMIN -->
+
+<h2>ADMIN ACCESS</h2>
+
+<input type="password" id="adminPassword" placeholder="ADMIN PASSWORD">
+
+<button onclick="adminLogin()">ENTER</button>
+
+<div id="adminPanel" class="adminBox hidden">
+
+<h2>ADMIN PANEL</h2>
+
+<div class="small success">
+ADMIN ACCESS GRANTED
+</div>
+
+<hr>
+
+<h3>SELECT PUZZLE</h3>
+
+<select id="puzzleSelect" onchange="changeAdminPuzzle()"></select>
+
+<h3>EDIT PUZZLE</h3>
+
+<textarea id="editQuestion"></textarea>
+
+<input type="text" id="editAnswer" placeholder="ANSWER">
+
+<button onclick="savePuzzle()">SAVE PUZZLE</button>
+
+<hr>
+
+<h3>ALL USERS</h3>
+
+<div id="userList"></div>
+
+<hr>
+
+<h3>RESET VIEW COUNT</h3>
+
+<button onclick="resetViews()">RESET</button>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+<script>
+
+/* =========================
+VIEW COUNT
+========================= */
+
+let views =
+    localStorage.getItem("aether9_views");
+
+if(!views){
+
+    views = 0;
+
+}
+
+views++;
+
+localStorage.setItem(
+    "aether9_views",
+    views
+);
+
+/* =========================
+PUZZLES
+========================= */
+
+let puzzles = JSON.parse(
+    localStorage.getItem("aether9_puzzles")
+) || [
+
+/* ── LEVELS 1–10 (original) ───────────────────────── */
+
+{
+question:
+`LEVEL 1
+
+everything begins with a name.
+
+what is this system called?`,
+answer:"æther//9"
+},
+
+{
+question:
+`LEVEL 2
+
+01000001 01000101 01010100 01001000 01000101 01010010`,
+answer:"aether"
+},
+
+{
+question:
+`LEVEL 3
+
+ROT13:
+
+nrgure`,
+answer:"aether"
+},
+
+{
+question:
+`LEVEL 4
+
+What disappears when spoken?`,
+answer:"silence"
+},
+
+{
+question:
+`LEVEL 5
+
+What has keys but no locks?`,
+answer:"keyboard"
+},
+
+{
+question:
+`LEVEL 6
+
+VkVJTA==`,
+answer:"veil"
+},
+
+{
+question:
+`LEVEL 7
+
+... .... .- -.. --- .--`,
+answer:"shadow"
+},
+
+{
+question:
+`LEVEL 8
+
+What gets wetter the more it dries?`,
+answer:"towel"
+},
+
+{
+question:
+`LEVEL 9
+
+What invention lets you look through walls?`,
+answer:"window"
+},
+
+{
+question:
+`LEVEL 10
+
+What can travel around the world while staying in one corner?`,
+answer:"stamp"
+},
+
+/* ── LEVELS 11–50 (new) ───────────────────────────── */
+
+{
+question:
+`LEVEL 11
+
+I can run but never walk.
+I have a mouth but never talk.
+I have a head but never weep.
+I have a bed but never sleep.
+
+What am I?`,
+answer:"river"
+},
+
+{
+question:
+`LEVEL 12
+
+HEXADECIMAL DECODE:
+
+67 68 6f 73 74
+
+What word do these bytes spell?`,
+answer:"ghost"
+},
+
+{
+question:
+`LEVEL 13
+
+What is the next term in this sequence?
+
+1, 11, 21, 1211, 111221, 312211, ?
+
+HINT: describe aloud what you see in each previous term.`,
+answer:"13112221"
+},
+
+{
+question:
+`LEVEL 14
+
+NATO PHONETIC ALPHABET.
+Take the first letter of each word:
+
+FOXTROT  ROMEO  ALPHA  CHARLIE  TANGO  UNIFORM  ROMEO  ECHO
+
+One word.`,
+answer:"fracture"
+},
+
+{
+question:
+`LEVEL 15
+
+I am a single English word.
+
+Spell me correctly and I am incorrect.
+Spell me incorrectly and I am correct.
+
+What am I?`,
+answer:"wrong"
+},
+
+{
+question:
+`LEVEL 16
+
+I am the first perfect number.
+The sum of all my proper divisors equals me exactly.
+I am also the number of faces on a cube.
+
+Spell me out. One word.`,
+answer:"six"
+},
+
+{
+question:
+`LEVEL 17
+
+ATBASH CIPHER  (A↔Z, B↔Y, C↔X …)
+
+NRIILI
+
+Decode it.`,
+answer:"mirror"
+},
+
+{
+question:
+`LEVEL 18
+
+Take the FIRST letter of each word in this sentence:
+
+"Every night I grow monstrous, adrift."
+
+What word do those letters spell?`,
+answer:"enigma"
+},
+
+{
+question:
+`LEVEL 19
+
+These are the first letters of the counting numbers:
+
+O, T, T, F, F, S, S, E, N, ?
+
+What number comes next? (spell it out)`,
+answer:"ten"
+},
+
+{
+question:
+`LEVEL 20
+
+What 5-letter word becomes shorter
+when you add two letters to it?`,
+answer:"short"
+},
+
+{
+question:
+`LEVEL 21
+
+I have no mouth, yet I repeat every word you say.
+I have no memory, yet I recall your last words perfectly.
+I live where you cannot see me, yet I am never far.
+
+What am I?`,
+answer:"echo"
+},
+
+{
+question:
+`LEVEL 22
+
+ROT13:
+
+GUR NAFJRE VF RYRIRA
+
+What is the answer?`,
+answer:"eleven"
+},
+
+{
+question:
+`LEVEL 23
+
+I am always ahead of you, never behind.
+I am free, yet nothing is more precious.
+I can be saved, but never stored.
+I can be killed, but I never die.
+Every living thing surrenders to me.
+
+What am I?`,
+answer:"time"
+},
+
+{
+question:
+`LEVEL 24
+
+A man is found dead in an open field.
+Beside him is a sealed package he never opened.
+There are no footprints. No marks on his body.
+He fell from a great height.
+
+What is inside the package?
+
+One word.`,
+answer:"parachute"
+},
+
+{
+question:
+`LEVEL 25
+
+VIGENÈRE CIPHER
+KEY: KEY
+
+KFWCW
+
+Decrypt the message.`,
+answer:"abyss"
+},
+
+{
+question:
+`LEVEL 26
+
+I have 88 keys but cannot open a single lock.
+I make music but have no voice of my own.
+I was invented in 1700 by Bartolomeo Cristofori.
+
+What am I?`,
+answer:"piano"
+},
+
+{
+question:
+`LEVEL 27
+
+What is the only common English word
+that ends in the letters   -mt   ?`,
+answer:"dreamt"
+},
+
+{
+question:
+`LEVEL 28
+
+Au.  Ag.  Fe.  Pb.  Cu.  Na.  K.
+
+These are the chemical symbols for:
+Gold, Silver, Iron, Lead, Copper, Sodium, Potassium.
+
+From which ancient language do these symbols derive?`,
+answer:"latin"
+},
+
+{
+question:
+`LEVEL 29
+
+I am the only number whose letters,
+when listed, appear in strict alphabetical order.
+
+Spell me out.`,
+answer:"forty"
+},
+
+{
+question:
+`LEVEL 30
+
+The more you take, the more you leave behind.
+
+What am I?`,
+answer:"footsteps"
+},
+
+{
+question:
+`LEVEL 31
+
+MORSE CODE:
+
+-.-. .. .--. .... . .-.
+
+Decode it.`,
+answer:"cipher"
+},
+
+{
+question:
+`LEVEL 32
+
+What is greater than God,
+more evil than the Devil,
+the poor have it,
+the rich need it,
+and if you eat it, you will die?`,
+answer:"nothing"
+},
+
+{
+question:
+`LEVEL 33
+
+BINARY → ASCII:
+
+01101111 01110010 01100001 01100011 01101100 01100101
+
+What word does this decode to?`,
+answer:"oracle"
+},
+
+{
+question:
+`LEVEL 34
+
+2, 3, 5, 7, 11, 13, 17, 19, 23, 29 …
+
+These numbers can only be divided by 1 and themselves.
+What is the name for this class of numbers?
+
+One word.`,
+answer:"prime"
+},
+
+{
+question:
+`LEVEL 35
+
+I come before everything.
+In music, I am the first note.
+In the Greek alphabet, I am the first letter.
+In physics, I name the dominant member of a pack.
+In code, I name the first version.
+
+One word.`,
+answer:"alpha"
+},
+
+{
+question:
+`LEVEL 36
+
+A woman shoots her husband.
+She holds him underwater for five minutes.
+Then they go out to dinner together.
+
+How is this possible?
+
+One word — her profession.`,
+answer:"photographer"
+},
+
+{
+question:
+`LEVEL 37
+
+Read only the FIRST word of each sentence:
+
+Signal lost.
+Everything is quiet.
+Cannot reach you.
+Returning to silence.
+End of line.
+Transmission terminated.
+
+What word do those first words spell?`,
+answer:"secret"
+},
+
+{
+question:
+`LEVEL 38
+
+Assign each letter of the alphabet its Nth prime:
+A=2  B=3  C=5  D=7  E=11  F=13  G=17  H=19  I=23
+J=29  K=31  L=37  M=41  N=43  O=47  P=53  Q=59
+R=61  S=67  T=71  U=73  V=79  W=83  X=89  Y=97  Z=101
+
+Which letters correspond (in order) to:
+37 … 47 … 17 … 23 … 5
+
+One word.`,
+answer:"logic"
+},
+
+{
+question:
+`LEVEL 39
+
+Fill in the blank to make the sentence true:
+
+"This sentence contains _______ words."
+
+(spell out the number)`,
+answer:"eight"
+},
+
+{
+question:
+`LEVEL 40
+
+ANAGRAM:
+
+Rearrange all the letters of   SILENT
+to find what you must do to truly understand.`,
+answer:"listen"
+},
+
+{
+question:
+`LEVEL 41
+
+The Liar Paradox.
+
+"This statement is _______."
+
+If the blank is true, the statement is false.
+If the blank is false, the statement is true.
+
+What one word fills the blank?`,
+answer:"false"
+},
+
+{
+question:
+`LEVEL 42
+
+I am not a number, yet I am greater than any number.
+I existed before mathematics, yet I am its deepest obsession.
+Divide me by a thousand and I remain whole.
+Add me to any number and that number does not grow.
+
+What concept am I?`,
+answer:"infinity"
+},
+
+{
+question:
+`LEVEL 43
+
+How can the following equation be true?
+
+11 + 2 = 1
+
+Name the object that makes this correct.
+
+One word.`,
+answer:"clock"
+},
+
+{
+question:
+`LEVEL 44
+
+In mathematics, I am written: ∅
+I am the set that contains no elements.
+I am not nothing — I am the container of nothing.
+I am the foundation from which all numbers are built.
+In computing, I am the absence of a value.
+
+One word.`,
+answer:"null"
+},
+
+{
+question:
+`LEVEL 45
+
+In chess, what is the name of the special move
+in which a king and a rook simultaneously
+swap positions — the only move where two pieces
+move in a single turn?
+
+One word.`,
+answer:"castling"
+},
+
+{
+question:
+`LEVEL 46
+
+A man is found dead, hanging from the ceiling.
+The room is locked from the inside.
+All windows are sealed shut.
+The room is completely bare.
+Beneath his feet: a puddle of water.
+
+What did he stand on?
+
+One word.`,
+answer:"ice"
+},
+
+{
+question:
+`LEVEL 47
+
+In musical notation, this Italian tempo marking means
+"at a walking pace."
+
+It sits between Adagio (slow) and Moderato (moderate),
+typically ♩= 76 – 108 BPM.
+
+Beethoven's most famous symphony opens with it.
+
+What is this tempo marking?`,
+answer:"andante"
+},
+
+{
+question:
+`LEVEL 48
+
+What can you give to another person
+and still keep yourself?
+
+One word.`,
+answer:"word"
+},
+
+{
+question:
+`LEVEL 49
+
+You are alone in a pitch-dark room.
+In front of you:  a candle,  an oil lamp,  a fireplace.
+You have one match.
+
+Which do you light first?
+
+One word.`,
+answer:"match"
+},
+
+{
+question:
+`LEVEL 50
+
+FINAL TRANSMISSION.
+
+The 49 levels before this were noise.
+Interference. Tests of attention.
+
+The answer has been embedded in this system since the beginning.
+It is in the subtitle.
+It is in the completion message.
+It is what you were told this system was never meant to deliver.
+
+What were you always looking for?
+
+One word.`,
+answer:"signal"
+}
+
+];
+
+/* =========================
+SYSTEM VARIABLES
+========================= */
+
+let currentUser = null;
+let currentLevel = 0;
+let adminSelectedPuzzle = 0;
+
+/* =========================
+SIGNUP
+========================= */
+
+function signup(){
+
+    let user =
+        document
+        .getElementById("signupUser")
+        .value
+        .trim();
+
+    let pass =
+        document
+        .getElementById("signupPass")
+        .value
+        .trim();
+
+    if(!user || !pass){
+
+        return msg("fill everything");
+
+    }
+
+    let users = JSON.parse(
+        localStorage.getItem("aether9_users")
+    ) || {};
+
+    if(users[user]){
+
+        return msg("user already exists");
+
+    }
+
+    users[user] = {
+
+        password:pass,
+        level:0
+
+    };
+
+    localStorage.setItem(
+        "aether9_users",
+        JSON.stringify(users)
+    );
+
+    msg("account created", true);
+
+}
+
+/* =========================
+LOGIN
+========================= */
+
+function login(){
+
+    let user =
+        document
+        .getElementById("loginUser")
+        .value
+        .trim();
+
+    let pass =
+        document
+        .getElementById("loginPass")
+        .value
+        .trim();
+
+    let users = JSON.parse(
+        localStorage.getItem("aether9_users")
+    ) || {};
+
+    if(!users[user]){
+
+        return msg("user not found");
+
+    }
+
+    if(users[user].password !== pass){
+
+        return msg("wrong password");
+
+    }
+
+    currentUser = user;
+
+    currentLevel =
+        users[user].level || 0;
+
+    enterGame();
+
+}
+
+/* =========================
+GUEST LOGIN
+========================= */
+
+function guestLogin(){
+
+    currentUser =
+        "guest_" +
+        Math.floor(Math.random() * 999999);
+
+    currentLevel = 0;
+
+    enterGame();
+
+}
+
+/* =========================
+ENTER GAME
+========================= */
+
+function enterGame(){
+
+    document
+        .getElementById("authArea")
+        .classList
+        .add("hidden");
+
+    document
+        .getElementById("gameArea")
+        .classList
+        .remove("hidden");
+
+    document
+        .getElementById("currentUser")
+        .innerText =
+        currentUser;
+
+    document
+        .getElementById("viewCount")
+        .innerText =
+        views;
+
+    loadPuzzle();
+
+}
+
+/* =========================
+LOAD PUZZLE
+========================= */
+
+function loadPuzzle(){
+
+    document
+        .getElementById("question")
+        .innerText =
+        puzzles[currentLevel].question;
+
+    document
+        .getElementById("levelNum")
+        .innerText =
+        currentLevel + 1;
+
+    document
+        .getElementById("answerInput")
+        .value = "";
+
+}
+
+/* =========================
+SUBMIT ANSWER
+========================= */
+
+function submitAnswer(){
+
+    let input =
+        document
+        .getElementById("answerInput")
+        .value
+        .trim()
+        .toLowerCase();
+
+    let correct =
+        puzzles[currentLevel]
+        .answer
+        .toLowerCase();
+
+    if(input === correct){
+
+        currentLevel++;
+
+        if(!currentUser.startsWith("guest_")){
+
+            let users = JSON.parse(
+                localStorage.getItem("aether9_users")
+            );
+
+            users[currentUser].level =
+                currentLevel;
+
+            localStorage.setItem(
+                "aether9_users",
+                JSON.stringify(users)
+            );
+
+        }
+
+        if(currentLevel >= puzzles.length){
+
+            document
+                .getElementById("question")
+                .innerHTML =
+
+`ACCESS GRANTED
+
+you found the signal.
+
+SESSION TERMINATED.`;
+
+            return;
+
+        }
+
+        loadPuzzle();
+
+    }
+
+    else{
+
+        alert("incorrect");
+
+    }
+
+}
+
+/* =========================
+ADMIN LOGIN
+========================= */
+
+function adminLogin(){
+
+    let pass =
+        document
+        .getElementById("adminPassword")
+        .value;
+
+    if(pass === "999.000"){
+
+        document
+            .getElementById("adminPanel")
+            .classList
+            .remove("hidden");
+
+        loadAdminData();
+
+    }
+
+    else{
+
+        alert("access denied");
+
+    }
+
+}
+
+/* =========================
+ADMIN DATA
+========================= */
+
+function loadAdminData(){
+
+    loadPuzzleSelector();
+
+    loadPuzzleEditor();
+
+    let users = JSON.parse(
+        localStorage.getItem("aether9_users")
+    ) || {};
+
+    let html = "";
+
+    for(let u in users){
+
+        html += `
+        <div style="margin-bottom:10px">
+        ${u} — LEVEL ${users[u].level + 1}
+        </div>
+        `;
+
+    }
+
+    document
+        .getElementById("userList")
+        .innerHTML =
+        html;
+
+}
+
+/* =========================
+PUZZLE SELECTOR
+========================= */
+
+function loadPuzzleSelector(){
+
+    let select =
+        document
+        .getElementById("puzzleSelect");
+
+    select.innerHTML = "";
+
+    for(let i = 0; i < puzzles.length; i++){
+
+        let option =
+            document.createElement("option");
+
+        option.value = i;
+
+        option.innerText =
+            "LEVEL " + (i + 1);
+
+        select.appendChild(option);
+
+    }
+
+}
+
+/* =========================
+CHANGE PUZZLE
+========================= */
+
+function changeAdminPuzzle(){
+
+    adminSelectedPuzzle =
+        parseInt(
+            document
+            .getElementById("puzzleSelect")
+            .value
+        );
+
+    loadPuzzleEditor();
+
+}
+
+/* =========================
+LOAD EDITOR
+========================= */
+
+function loadPuzzleEditor(){
+
+    document
+        .getElementById("editQuestion")
+        .value =
+        puzzles[adminSelectedPuzzle]
+        .question;
+
+    document
+        .getElementById("editAnswer")
+        .value =
+        puzzles[adminSelectedPuzzle]
+        .answer;
+
+}
+
+/* =========================
+SAVE PUZZLE
+========================= */
+
+function savePuzzle(){
+
+    puzzles[adminSelectedPuzzle].question =
+        document
+        .getElementById("editQuestion")
+        .value;
+
+    puzzles[adminSelectedPuzzle].answer =
+        document
+        .getElementById("editAnswer")
+        .value;
+
+    localStorage.setItem(
+        "aether9_puzzles",
+        JSON.stringify(puzzles)
+    );
+
+    loadPuzzle();
+
+    alert("saved");
+
+}
+
+/* =========================
+RESET VIEWS
+========================= */
+
+function resetViews(){
+
+    localStorage.setItem(
+        "aether9_views",
+        0
+    );
+
+    alert("views reset");
+
+}
+
+/* =========================
+LOGOUT
+========================= */
+
+function logout(){
+
+    location.reload();
+
+}
+
+/* =========================
+MESSAGE
+========================= */
+
+function msg(text, success=false){
+
+    let el =
+        document
+        .getElementById("authMsg");
+
+    el.innerText = text;
+
+    el.className =
+        success
+        ? "small success"
+        : "small error";
+
+}
+
+</script>
+
+</body>
+</html>
